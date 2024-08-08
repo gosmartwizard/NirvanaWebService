@@ -19,13 +19,26 @@ PROMTAIL        := grafana/promtail:2.9.0
 
 KIND_CLUSTER    := nirvana-starter-cluster
 NAMESPACE       := nirvana-system
-NIRVANA_APP     := nirvana
+NIRVANA_SALES_APP := nirvana-sales
 AUTH_APP        := auth
-BASE_IMAGE_NAME := localhost/ardanlabs
+BASE_IMAGE_NAME := localhost/nirvanalabs
 VERSION         := 0.0.1
-NIRVANA_IMAGE   := $(BASE_IMAGE_NAME)/$(NIRVANA_APP):$(VERSION)
+NIRVANA_SALES_IMAGE   := $(BASE_IMAGE_NAME)/$(NIRVANA_SALES_APP):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
 AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
+
+
+# Building containers
+
+build: sales
+
+sales:
+	docker build \
+		-f zarf/docker/dockerfile.sales \
+		-t $(NIRVANA_SALES_IMAGE) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+		.
 
 # Running from within k8s/kind
 
