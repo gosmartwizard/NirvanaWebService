@@ -17,7 +17,7 @@ ARG BUILD_DATE
 ARG BUILD_REF
 RUN addgroup -g 1000 -S sales && \
     adduser -u 1000 -h /service -G sales -S sales
-COPY --from=build_sales --chown=sales:sales /service/apis/services/sales/sales /service/sales
+COPY --from=build_sales --chown=sales:sales /service/apis/services/sales/sales /service/nirvana-sales
 WORKDIR /service
 USER sales
 CMD ["./nirvana-sales"]

@@ -17,15 +17,15 @@ TEMPO           := grafana/tempo:2.4.0
 LOKI            := grafana/loki:2.9.0
 PROMTAIL        := grafana/promtail:2.9.0
 
-KIND_CLUSTER    := nirvana-starter-cluster
-NAMESPACE       := nirvana-system
-NIRVANA_SALES_APP := nirvana-sales
-AUTH_APP        := auth
-BASE_IMAGE_NAME := localhost/nirvanalabs
-VERSION         := 0.0.1
-NIRVANA_SALES_IMAGE   := $(BASE_IMAGE_NAME)/$(NIRVANA_SALES_APP):$(VERSION)
-METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
-AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
+KIND_CLUSTER        := nirvana-starter-cluster
+NAMESPACE           := nirvana-sales-system
+NIRVANA_SALES_APP   := nirvana-sales
+AUTH_APP            := auth
+BASE_IMAGE_NAME     := localhost/nirvanalabs
+VERSION             := 0.0.1
+NIRVANA_SALES_IMAGE := $(BASE_IMAGE_NAME)/$(NIRVANA_SALES_APP):$(VERSION)
+METRICS_IMAGE       := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
+AUTH_IMAGE          := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
 
 
 # Building containers
@@ -60,6 +60,33 @@ dev-status-all:
 
 dev-status:
 	watch -n 2 kubectl get pods -o wide --all-namespaces
+
+# ------------------------------------------------------------------------------
+
+dev-load:
+	kind load docker-image $(NIRVANA_SALES_IMAGE) --name $(KIND_CLUSTER)
+
+dev-apply:
+	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(NIRVANA_SALES_APP) --timeout=120s --for=condition=Ready
+
+dev-restart:
+	kubectl rollout restart deployment $(NIRVANA_SALES_APP) --namespace=$(NAMESPACE)
+
+dev-update: build dev-load dev-restart
+
+dev-update-apply: build dev-load dev-apply
+
+dev-logs:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(NIRVANA_SALES_APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run apis/tooling/logfmt/main.go
+
+# ------------------------------------------------------------------------------
+
+dev-describe-deployment:
+	kubectl describe deployment --namespace=$(NAMESPACE) $(NIRVANA_SALES_APP)
+
+dev-describe-sales:
+	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(NIRVANA_SALES_APP)
 
 tidy:
 	go mod tidy

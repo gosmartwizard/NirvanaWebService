@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nirvana-sales-system
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nirvana-sales
+  namespace: nirvana-sales-system
+
+spec:
+  selector:
+    matchLabels:
+      app: nirvana-sales
+
+  template:
+    metadata:
+      labels:
+        app: nirvana-sales
+    spec:
+      terminationGracePeriodSeconds: 60
+
+      containers:
+      - name: nirvana-sales
+        image: nirvana-sales-image
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nirvana-sales-service
+  namespace: nirvana-sales-system
+
+spec:
+  selector:
+    app: nirvana-sales
