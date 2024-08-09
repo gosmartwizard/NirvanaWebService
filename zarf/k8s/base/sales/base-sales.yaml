@@ -26,7 +26,11 @@ spec:
       containers:
       - name: nirvana-sales
         image: nirvana-sales-image
-
+        env:
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
 ---
 
 apiVersion: v1
