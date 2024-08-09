@@ -26,6 +26,11 @@ spec:
       containers:
       - name: nirvana-sales
         image: nirvana-sales-image
+        ports:
+        - name: sales
+          containerPort: 3000
+        - name: sales-debug
+          containerPort: 3010
         env:
         - name: GOMAXPROCS
           valueFrom:
